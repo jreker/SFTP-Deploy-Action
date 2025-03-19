@@ -103,13 +103,6 @@ printf "%s" "put -r $5 $6" >$TEMP_SFTP_FILE
 #-o StrictHostKeyChecking=no avoid Host key verification failed.
 sftp -b $TEMP_SFTP_FILE -P $3 $8 -o StrictHostKeyChecking=no -i $TEMP_SSH_PRIVATE_KEY_FILE $1@$2
 
-# if passphrase is set stop ssh-agent after sftp connection
-if [ -n "${12}" ]; then
-  echo 'Stop ssh-agent'
-  ssh-agent -k
-  # delete all keys from RAM
-  ssh-add -D
-fi
 
 echo 'Deploy Success'
 exit 0
