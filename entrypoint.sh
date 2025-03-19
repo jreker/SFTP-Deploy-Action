@@ -106,8 +106,7 @@ sftp -b $TEMP_SFTP_FILE -P $3 $8 -o StrictHostKeyChecking=no -i $TEMP_SSH_PRIVAT
 echo 'Deploy Success'
 # if passphrase is set stop ssh-agent after sftp connection
 if [ -n "${12}" ]; then
-  echo 'Stop ssh-agent'
-  ssh-agent -k
+  echo 'Clear keys from ssh-agent'
   # delete all keys from RAM
   ssh-add -D
 fi
