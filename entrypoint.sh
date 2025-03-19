@@ -83,11 +83,33 @@ else
   ssh -o StrictHostKeyChecking=no -p $3 -i $TEMP_SSH_PRIVATE_KEY_FILE $1@$2 mkdir -p $6
 fi
 
+# check if passphrase is set, if yes decrypt the private key
+if [ -n "${12}" ]; then
+  echo 'Use ssh-agent to decrypt private key with passphrase'
+  # start ssh agent
+  eval $(ssh-agent -s)
+  # use expect for ssh passphrase encryption
+  expect <<EOF
+    spawn ssh-add $TEMP_SSH_PRIVATE_KEY_FILE
+    expect "Enter passphrase"
+    send "${12}\r"
+    expect eof
+EOF
+fi
+
 echo 'SFTP Start'
 # create a temporary file containing sftp commands
 printf "%s" "put -r $5 $6" >$TEMP_SFTP_FILE
 #-o StrictHostKeyChecking=no avoid Host key verification failed.
 sftp -b $TEMP_SFTP_FILE -P $3 $8 -o StrictHostKeyChecking=no -i $TEMP_SSH_PRIVATE_KEY_FILE $1@$2
+
+# if passphrase is set stop ssh-agent after sftp connection
+if [ -n "${12}" ]; then
+  echo 'Stop ssh-agent'
+  ssh-agent -k
+  # delete all keys from RAM
+  ssh-add -D
+fi
 
 echo 'Deploy Success'
 exit 0
